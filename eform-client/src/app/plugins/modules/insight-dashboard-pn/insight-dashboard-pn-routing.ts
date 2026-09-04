@@ -8,6 +8,8 @@ import {
   DashboardsPageComponent,
   DashboardViewComponent,
   InsightDashboardSettingsComponent,
+  QuestionSetEditorPageComponent,
+  QuestionSetsPageComponent,
   SurveyConfigurationsPageComponent,
 } from './components';
 
@@ -37,6 +39,16 @@ export const routes: Routes = [
         path: 'surveys-configs',
         canActivate: [AuthGuard],
         component: SurveyConfigurationsPageComponent,
+      },
+      {
+        path: 'question-sets',
+        canActivate: [AuthGuard],
+        component: QuestionSetsPageComponent,
+      },
+      {
+        path: 'question-sets/:id',
+        canActivate: [AuthGuard],
+        component: QuestionSetEditorPageComponent,
       },
       {
         path: 'answers',

@@ -1,0 +1,33 @@
+<h3 mat-dialog-title>{{ (isEdit ? 'Edit question' : 'Add question') | translate }}</h3>
+<div mat-dialog-content>
+  <mat-form-field class="w-100">
+    <mat-label>{{ 'Question text' | translate }}</mat-label>
+    <input matInput type="text" [(ngModel)]="text" id="questionTextInput" />
+  </mat-form-field>
+  <mat-form-field class="w-100">
+    <mat-label>{{ 'Question type' | translate }}</mat-label>
+    <mtx-select
+      [items]="questionTypes"
+      bindLabel="label"
+      bindValue="value"
+      [(ngModel)]="questionType"
+      [disabled]="isEdit"
+      id="questionTypeSelect"
+    ></mtx-select>
+  </mat-form-field>
+  <p *ngIf="isEdit">{{ 'Type can only be set when the question is created.' | translate }}</p>
+</div>
+<div mat-dialog-actions class="d-flex flex-row justify-content-end">
+  <button
+    mat-raised-button
+    color="accent"
+    id="questionSaveBtn"
+    [disabled]="!text || !questionType"
+    (click)="save()"
+  >
+    {{ 'Save' | translate }}
+  </button>
+  <button mat-raised-button id="questionCancelBtn" (click)="hide()">
+    {{ 'Cancel' | translate }}
+  </button>
+</div>

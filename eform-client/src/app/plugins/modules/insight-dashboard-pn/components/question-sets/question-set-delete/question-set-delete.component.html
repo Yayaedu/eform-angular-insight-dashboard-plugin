@@ -1,0 +1,13 @@
+<h3 mat-dialog-title>{{ 'Delete question set' | translate }}</h3>
+<div mat-dialog-content>
+  <p>{{ 'Are you sure you want to delete' | translate }} <strong>{{ questionSet.name }}</strong>?</p>
+  <p>{{ 'This will also delete all its questions and answer options. Existing answers already submitted are not affected.' | translate }}</p>
+</div>
+<div mat-dialog-actions class="d-flex flex-row justify-content-end">
+  <button mat-raised-button color="warn" id="questionSetDeleteSaveBtn" (click)="delete()">
+    {{ 'Delete' | translate }}
+  </button>
+  <button mat-raised-button id="questionSetDeleteCancelBtn" (click)="hide()">
+    {{ 'Cancel' | translate }}
+  </button>
+</div>

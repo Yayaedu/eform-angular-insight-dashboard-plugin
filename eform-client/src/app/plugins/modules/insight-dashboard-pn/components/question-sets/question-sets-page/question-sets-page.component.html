@@ -1,0 +1,39 @@
+<eform-new-subheader>
+  <button
+    mat-raised-button
+    id="createQuestionSetBtn"
+    color="accent"
+    (click)="openCreateDialog()"
+  >
+    {{ 'New question set' | translate }}
+  </button>
+</eform-new-subheader>
+
+<mat-card *ngIf="listModel.entities.length === 0" class="m-3 p-3">
+  <p>{{ 'No question sets yet — click "New question set" to build your first one.' | translate }}</p>
+</mat-card>
+
+<div class="d-flex flex-column m-3" *ngIf="listModel.entities.length > 0">
+  <mat-card
+    *ngFor="let questionSet of listModel.entities"
+    class="mb-2 p-2 question-set-row"
+    (click)="openEditor(questionSet.id)"
+  >
+    <div class="d-flex flex-row justify-content-between align-items-center">
+      <div class="d-flex flex-column">
+        <strong>{{ questionSet.name }}</strong>
+        <span>#{{ questionSet.id }}</span>
+      </div>
+      <div class="d-flex flex-row">
+        <button
+          mat-icon-button
+          id="deleteQuestionSetBtn-{{ questionSet.id }}"
+          (click)="openDeleteDialog(questionSet, $event)"
+          matTooltip="{{ 'Delete' | translate }}"
+        >
+          <mat-icon color="warn">delete</mat-icon>
+        </button>
+      </div>
+    </div>
+  </mat-card>
+</div>

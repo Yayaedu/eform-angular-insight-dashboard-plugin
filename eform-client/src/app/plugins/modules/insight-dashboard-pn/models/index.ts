@@ -4,3 +4,4 @@ export * from './common-dictionary-extended.model';
 export * from './survey';
 export * from './dashboard';
 export * from './answer';
+export * from './question';

@@ -52,9 +52,13 @@ using Microting.InsightDashboardBase.Infrastructure.Models;
 using Services.Common.InsightDashboardLocalizationService;
 using Services.Common.InsightDashboardPnSettingsService;
 using Services.DashboardService;
+using Services.DeviceSyncService;
 using Services.DictionaryService;
 using Services.InterviewsExcelService;
 using Services.InterviewsService;
+using Services.OptionsService;
+using Services.QuestionSetsService;
+using Services.QuestionsService;
 using Services.SurveysService;
 using Services.WordService;
 
@@ -80,10 +84,15 @@ public class EformInsightDashboardPlugin : IEformPlugin
         services.AddSingleton<IInsightDashboardLocalizationService, InsightDashboardLocalizationService>();
         services.AddTransient<IInsightDashboardPnSettingsService, InsightDashboardPnSettingsService>();
         services.AddScoped<ISurveysService, SurveysService>();
+        services.AddScoped<IQuestionSetsService, QuestionSetsService>();
+        services.AddScoped<IQuestionsService, QuestionsService>();
+        services.AddScoped<IOptionsService, OptionsService>();
         services.AddScoped<IDashboardService, DashboardService>();
         services.AddScoped<IDictionaryService, DictionaryService>();
         services.AddScoped<IInterviewsService, InterviewsService>();
         services.AddScoped<IAnswersService, AnswersService>();
+        services.AddSingleton<IDeviceTokenStore, DeviceTokenStore>();
+        services.AddScoped<IDeviceSyncService, DeviceSyncService>();
         services.AddTransient<IInterviewsExcelService, InterviewsExcelService>();
         services.AddTransient<IWordService, WordService>();
     }
@@ -321,6 +330,63 @@ public class EformInsightDashboardPlugin : IEformPlugin
                                 Language = LanguageNames.Danish,
                             },
                         }
+                    },
+                    new PluginMenuItemModel
+                    {
+                        Name = "Question sets",
+                        E2EId = "insight-dashboard-pn-question-sets",
+                        Link = "/plugins/insight-dashboard-pn/question-sets",
+                        Type = MenuItemTypeEnum.Link,
+                        Position = 3,
+                        MenuTemplate = new PluginMenuTemplateModel()
+                        {
+                            Name = "Question sets",
+                            E2EId = "insight-dashboard-pn-question-sets",
+                            DefaultLink = "/plugins/insight-dashboard-pn/question-sets",
+                            Permissions = new List<PluginMenuTemplatePermissionModel>(),
+                            Translations = new List<PluginMenuTranslationModel>
+                            {
+                                new PluginMenuTranslationModel
+                                {
+                                    LocaleName = LocaleNames.English,
+                                    Name = "Question sets",
+                                    Language = LanguageNames.English,
+                                },
+                                new PluginMenuTranslationModel
+                                {
+                                    LocaleName = LocaleNames.German,
+                                    Name = "Fragebögen",
+                                    Language = LanguageNames.German,
+                                },
+                                new PluginMenuTranslationModel
+                                {
+                                    LocaleName = LocaleNames.Danish,
+                                    Name = "Spørgeskemaer",
+                                    Language = LanguageNames.Danish,
+                                },
+                            }
+                        },
+                        Translations = new List<PluginMenuTranslationModel>
+                        {
+                            new PluginMenuTranslationModel
+                            {
+                                LocaleName = LocaleNames.English,
+                                Name = "Question sets",
+                                Language = LanguageNames.English,
+                            },
+                            new PluginMenuTranslationModel
+                            {
+                                LocaleName = LocaleNames.German,
+                                Name = "Fragebögen",
+                                Language = LanguageNames.German,
+                            },
+                            new PluginMenuTranslationModel
+                            {
+                                LocaleName = LocaleNames.Danish,
+                                Name = "Spørgeskemaer",
+                                Language = LanguageNames.Danish,
+                            },
+                        }
                     }
                 }
             }
@@ -363,6 +429,13 @@ public class EformInsightDashboardPlugin : IEformPlugin
                     E2EId = "insight-dashboard-pn-answers",
                     Link = "/plugins/insight-dashboard-pn/answers",
                     Position = 2
+                },
+                new MenuItemModel()
+                {
+                    Name = localizationService.GetString("QuestionSets"),
+                    E2EId = "insight-dashboard-pn-question-sets",
+                    Link = "/plugins/insight-dashboard-pn/question-sets",
+                    Position = 3
                 },
             }
         });
