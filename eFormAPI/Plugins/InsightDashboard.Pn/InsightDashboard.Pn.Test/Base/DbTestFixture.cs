@@ -36,7 +36,7 @@ using NUnit.Framework;
 public abstract class DbTestFixture
 {
     protected MicrotingDbContext DbContext;
-    private string _connectionString;
+    protected string ConnectionString;
     private string _path;
 
     private void GetContext(string connectionStr)
@@ -51,9 +51,9 @@ public abstract class DbTestFixture
     [SetUp]
     public void Setup()
     {
-        _connectionString = @"Server = localhost; port = 3306; Database = 420_SDK; user = root; password=secretpassword; Convert Zero Datetime = true;";
+        ConnectionString = @"Server = localhost; port = 3306; Database = 420_SDK; user = root; password=secretpassword; Convert Zero Datetime = true;";
 
-        GetContext(_connectionString);
+        GetContext(ConnectionString);
 
         DbContext.Database.SetCommandTimeout(300);
 
