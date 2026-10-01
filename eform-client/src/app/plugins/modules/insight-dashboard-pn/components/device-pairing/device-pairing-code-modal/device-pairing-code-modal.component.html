@@ -1,0 +1,34 @@
+<h3 mat-dialog-title>{{ 'Pairing code for' | translate }} {{ site.name }}</h3>
+
+<div mat-dialog-content *ngIf="!result">
+  <ul>
+    <li>{{ 'The code is only valid for 10 minutes.' | translate }}</li>
+    <li>{{ 'Requesting a new code invalidates any code already issued for this site.' | translate }}</li>
+    <li>{{ 'Enter the code in insight_app on the tablet to pair it with this site.' | translate }}</li>
+  </ul>
+</div>
+
+<div mat-dialog-content *ngIf="result" class="d-flex flex-column align-items-center py-3">
+  <span class="pairing-code" id="pairingCodeValue">{{ result.code }}</span>
+  <span>{{ 'Expires at' | translate }} {{ result.expires_at | date: 'HH:mm:ss' }}</span>
+</div>
+
+<div mat-dialog-actions class="d-flex flex-row justify-content-end">
+  <button
+    mat-raised-button
+    id="pairingCodeCancelBtn"
+    (click)="hide()"
+  >
+    {{ (result ? 'Close' : 'Cancel') | translate }}
+  </button>
+  <button
+    *ngIf="!result"
+    mat-raised-button
+    color="accent"
+    id="pairingCodeRequestBtn"
+    [disabled]="requesting"
+    (click)="requestCode()"
+  >
+    {{ 'Generate code' | translate }}
+  </button>
+</div>

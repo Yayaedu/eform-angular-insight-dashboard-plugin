@@ -7,6 +7,7 @@ import {
   DashboardEditComponent,
   DashboardsPageComponent,
   DashboardViewComponent,
+  DevicePairingPageComponent,
   InsightDashboardSettingsComponent,
   QuestionSetEditorPageComponent,
   QuestionSetsPageComponent,
@@ -54,6 +55,11 @@ export const routes: Routes = [
         path: 'answers',
         canActivate: [AdminGuard],
         component: AnswerPageComponent,
+      },
+      {
+        path: 'device-pairing',
+        canActivate: [AdminGuard],
+        component: DevicePairingPageComponent,
       },
       {
         path: 'settings',

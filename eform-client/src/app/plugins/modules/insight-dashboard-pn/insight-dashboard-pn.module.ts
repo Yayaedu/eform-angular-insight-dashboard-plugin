@@ -9,6 +9,7 @@ import {
   InsightDashboardPnDashboardDictionariesService,
   InsightDashboardPnDashboardItemsService,
   InsightDashboardPnDashboardsService,
+  InsightDashboardPnDevicePairingService,
   InsightDashboardPnOptionsService,
   InsightDashboardPnQuestionSetsService,
   InsightDashboardPnQuestionsService,
@@ -47,6 +48,8 @@ import {
   SurveyConfigurationNewComponent,
   SurveyConfigurationsPageComponent,
   SurveyConfigurationStatusComponent,
+  DevicePairingPageComponent,
+  DevicePairingCodeModalComponent,
 } from './components';
 import {DragulaModule} from 'ng2-dragula';
 import {NgxChartsModule} from '@swimlane/ngx-charts';
@@ -128,6 +131,8 @@ import {MatMenu, MatMenuItem, MatMenuTrigger} from "@angular/material/menu";
     QuestionEditComponent,
     QuestionDeleteComponent,
     OptionEditorComponent,
+    DevicePairingPageComponent,
+    DevicePairingCodeModalComponent,
   ],
   providers: [
     InsightDashboardPnSettingsService,
@@ -139,6 +144,7 @@ import {MatMenu, MatMenuItem, MatMenuTrigger} from "@angular/material/menu";
     InsightDashboardPnQuestionSetsService,
     InsightDashboardPnQuestionsService,
     InsightDashboardPnOptionsService,
+    InsightDashboardPnDevicePairingService,
   ],
 })
 export class InsightDashboardPnModule {

@@ -8,8 +8,10 @@ using Microting.eFormApi.BasePn.Infrastructure.Models.API;
 using Services.DeviceSyncService;
 
 // Device-facing API til insight_app (Flutter). Bevidst anonym — en fysisk
-// tablet har ingen admin-login. Dette er en lokal-test-genvej (parring på
-// SiteId, ikke den rigtige OTP/Unit-cloud-parring), se DeviceModels.cs.
+// tablet har ingen admin-login. Parring kræver nu en tidsbegrænset
+// engangskode udstedt af en admin (se DevicePairingController), i stedet
+// for at stole direkte på SiteId — se DeviceModels.cs og
+// DevicePairingCodeStore.
 [AllowAnonymous]
 [Route("api/insight-dashboard-pn/device")]
 public class DeviceController : Controller
@@ -25,7 +27,7 @@ public class DeviceController : Controller
     [Route("pair")]
     public async Task<OperationDataResult<DevicePairResponseModel>> Pair([FromBody] DevicePairRequestModel model)
     {
-        return await _deviceSyncService.Pair(model.SiteId);
+        return await _deviceSyncService.Pair(model.Code);
     }
 
     [HttpGet]

@@ -24,30 +24,78 @@ public class DeviceSyncService : IDeviceSyncService
     private readonly IInsightDashboardLocalizationService _localizationService;
     private readonly IEFormCoreService _coreHelper;
     private readonly IDeviceTokenStore _tokenStore;
+    private readonly IDevicePairingCodeStore _pairingCodeStore;
 
     public DeviceSyncService(
         ILogger<DeviceSyncService> logger,
         IInsightDashboardLocalizationService localizationService,
         IEFormCoreService coreHelper,
-        IDeviceTokenStore tokenStore)
+        IDeviceTokenStore tokenStore,
+        IDevicePairingCodeStore pairingCodeStore)
     {
         _logger = logger;
         _localizationService = localizationService;
         _coreHelper = coreHelper;
         _tokenStore = tokenStore;
+        _pairingCodeStore = pairingCodeStore;
     }
 
-    public async Task<OperationDataResult<DevicePairResponseModel>> Pair(int siteMicrotingUid)
+    public async Task<OperationDataResult<DevicePairingCodeResponseModel>> RequestPairingCode(int siteId)
     {
         try
         {
             var core = await _coreHelper.GetCore();
             await using var sdkContext = core.DbContextHelper.GetDbContext();
 
-            // siteMicrotingUid er det id "Device Users"-siden viser til
-            // admins — Sites.Id (den interne PK) er skjult i UI'et.
+            // Admin-fladen (DevicePairingController) kalder dette med
+            // Sites.Id (den interne PK) — samme id som /api/sites/dictionary
+            // allerede bruger. Det er et andet id end MicrotingUid, som
+            // DeviceController (tablet-API'et) bruger i Pair/QuestionSet.
             var site = await sdkContext.Sites
-                .Where(x => x.MicrotingUid == siteMicrotingUid)
+                .Where(x => x.Id == siteId)
+                .Where(x => x.WorkflowState != Constants.WorkflowStates.Removed)
+                .FirstOrDefaultAsync();
+
+            if (site == null)
+            {
+                return new OperationDataResult<DevicePairingCodeResponseModel>(false,
+                    _localizationService.GetString("SiteNotFound"));
+            }
+
+            var (code, expiresAtUtc) = _pairingCodeStore.GenerateCode(site.Id);
+
+            return new OperationDataResult<DevicePairingCodeResponseModel>(true, new DevicePairingCodeResponseModel
+            {
+                Code = code,
+                SiteId = site.Id,
+                SiteName = site.Name,
+                ExpiresAtUtc = expiresAtUtc,
+            });
+        }
+        catch (Exception e)
+        {
+            Trace.TraceError(e.Message);
+            _logger.LogError(e.Message);
+            return new OperationDataResult<DevicePairingCodeResponseModel>(false,
+                _localizationService.GetString("ErrorWhileGeneratingPairingCode"));
+        }
+    }
+
+    public async Task<OperationDataResult<DevicePairResponseModel>> Pair(string code)
+    {
+        try
+        {
+            if (!_pairingCodeStore.TryConsumeCode(code, out var siteId))
+            {
+                return new OperationDataResult<DevicePairResponseModel>(false,
+                    _localizationService.GetString("InvalidOrExpiredPairingCode"));
+            }
+
+            var core = await _coreHelper.GetCore();
+            await using var sdkContext = core.DbContextHelper.GetDbContext();
+
+            var site = await sdkContext.Sites
+                .Where(x => x.Id == siteId)
                 .Where(x => x.WorkflowState != Constants.WorkflowStates.Removed)
                 .FirstOrDefaultAsync();
 

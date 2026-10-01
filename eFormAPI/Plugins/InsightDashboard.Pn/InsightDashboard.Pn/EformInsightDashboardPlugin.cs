@@ -92,6 +92,7 @@ public class EformInsightDashboardPlugin : IEformPlugin
         services.AddScoped<IInterviewsService, InterviewsService>();
         services.AddScoped<IAnswersService, AnswersService>();
         services.AddSingleton<IDeviceTokenStore, DeviceTokenStore>();
+        services.AddSingleton<IDevicePairingCodeStore, DevicePairingCodeStore>();
         services.AddScoped<IDeviceSyncService, DeviceSyncService>();
         services.AddTransient<IInterviewsExcelService, InterviewsExcelService>();
         services.AddTransient<IWordService, WordService>();
@@ -387,6 +388,63 @@ public class EformInsightDashboardPlugin : IEformPlugin
                                 Language = LanguageNames.Danish,
                             },
                         }
+                    },
+                    new PluginMenuItemModel
+                    {
+                        Name = "Device pairing",
+                        E2EId = "insight-dashboard-pn-device-pairing",
+                        Link = "/plugins/insight-dashboard-pn/device-pairing",
+                        Type = MenuItemTypeEnum.Link,
+                        Position = 4,
+                        MenuTemplate = new PluginMenuTemplateModel()
+                        {
+                            Name = "Device pairing",
+                            E2EId = "insight-dashboard-pn-device-pairing",
+                            DefaultLink = "/plugins/insight-dashboard-pn/device-pairing",
+                            Permissions = new List<PluginMenuTemplatePermissionModel>(),
+                            Translations = new List<PluginMenuTranslationModel>
+                            {
+                                new PluginMenuTranslationModel
+                                {
+                                    LocaleName = LocaleNames.English,
+                                    Name = "Device pairing",
+                                    Language = LanguageNames.English,
+                                },
+                                new PluginMenuTranslationModel
+                                {
+                                    LocaleName = LocaleNames.German,
+                                    Name = "Geräte-Pairing",
+                                    Language = LanguageNames.German,
+                                },
+                                new PluginMenuTranslationModel
+                                {
+                                    LocaleName = LocaleNames.Danish,
+                                    Name = "Enhedsparring",
+                                    Language = LanguageNames.Danish,
+                                },
+                            }
+                        },
+                        Translations = new List<PluginMenuTranslationModel>
+                        {
+                            new PluginMenuTranslationModel
+                            {
+                                LocaleName = LocaleNames.English,
+                                Name = "Device pairing",
+                                Language = LanguageNames.English,
+                            },
+                            new PluginMenuTranslationModel
+                            {
+                                LocaleName = LocaleNames.German,
+                                Name = "Geräte-Pairing",
+                                Language = LanguageNames.German,
+                            },
+                            new PluginMenuTranslationModel
+                            {
+                                LocaleName = LocaleNames.Danish,
+                                Name = "Enhedsparring",
+                                Language = LanguageNames.Danish,
+                            },
+                        }
                     }
                 }
             }
@@ -436,6 +494,13 @@ public class EformInsightDashboardPlugin : IEformPlugin
                     E2EId = "insight-dashboard-pn-question-sets",
                     Link = "/plugins/insight-dashboard-pn/question-sets",
                     Position = 3
+                },
+                new MenuItemModel()
+                {
+                    Name = localizationService.GetString("DevicePairing"),
+                    E2EId = "insight-dashboard-pn-device-pairing",
+                    Link = "/plugins/insight-dashboard-pn/device-pairing",
+                    Position = 4
                 },
             }
         });

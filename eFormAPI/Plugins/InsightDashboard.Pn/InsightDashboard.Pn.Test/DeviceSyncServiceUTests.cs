@@ -42,9 +42,10 @@ using Services.QuestionsService;
 using Services.QuestionSetsService;
 
 // Denne service er selve tablet-vendte API'et (parring, hentning, upload) —
-// den del insight_app rent faktisk taler med. Test-genvejen parres direkte
-// på Sites.MicrotingUid, samme som DeviceSyncService selv gør (se dens
-// kommentar) — dette er IKKE den rigtige OTP-parring, kun lokal test.
+// den del insight_app rent faktisk taler med. Parring sker via en
+// tidsbegrænset engangskode (DevicePairingCodeStore): PairViaNewCode()
+// efterligner det en admin ville gøre (anmode om en kode) efterfulgt af det
+// enheden ville gøre (indløse koden).
 [TestFixture]
 public class DeviceSyncServiceUTests : DbTestFixture
 {
@@ -75,7 +76,8 @@ public class DeviceSyncServiceUTests : DbTestFixture
         _optionsService = new OptionsService(
             Substitute.For<ILogger<OptionsService>>(), localizationService, coreHelper);
         _deviceSyncService = new DeviceSyncService(
-            Substitute.For<ILogger<DeviceSyncService>>(), localizationService, coreHelper, new DeviceTokenStore());
+            Substitute.For<ILogger<DeviceSyncService>>(), localizationService, coreHelper,
+            new DeviceTokenStore(), new DevicePairingCodeStore());
 
         // Ét spørgeskema med ét buttons-spørgsmål og to svarmuligheder,
         // koblet til et testsite via en survey configuration — nøjagtig den
@@ -117,10 +119,45 @@ public class DeviceSyncServiceUTests : DbTestFixture
         _questionSetsService.Delete(_setId).GetAwaiter().GetResult();
     }
 
-    [Test]
-    public async Task Pair_KnownSite_ReturnsTokenAndSiteInfo()
+    // Efterligner det fulde parringsflow: en admin anmoder om en kode for
+    // sitet (RequestPairingCode, som tager Sites.Id — den interne PK, samme
+    // id som /api/sites/dictionary bruger), og enheden indløser den med det
+    // samme (Pair) — nøjagtig som insight_app ville gøre efter en admin har
+    // tastet/scannet koden.
+    private async Task<string> PairViaNewCode()
     {
-        var result = await _deviceSyncService.Pair(TestSiteMicrotingUid);
+        var codeResult = await _deviceSyncService.RequestPairingCode(_site.Id);
+        var pairResult = await _deviceSyncService.Pair(codeResult.Model.Code);
+        return pairResult.Model.Token;
+    }
+
+    [Test]
+    public async Task RequestPairingCode_KnownSite_ReturnsSixDigitCode()
+    {
+        var result = await _deviceSyncService.RequestPairingCode(_site.Id);
+
+        Assert.That(result.Success, Is.True);
+        Assert.That(result.Model.Code, Has.Length.EqualTo(6));
+        Assert.That(result.Model.Code, Does.Match("^[0-9]{6}$"));
+        Assert.That(result.Model.SiteId, Is.EqualTo(_site.Id));
+        Assert.That(result.Model.SiteName, Is.EqualTo("UTest site"));
+        Assert.That(result.Model.ExpiresAtUtc, Is.GreaterThan(DateTime.UtcNow));
+    }
+
+    [Test]
+    public async Task RequestPairingCode_UnknownSite_ReturnsFailure()
+    {
+        var result = await _deviceSyncService.RequestPairingCode(-1);
+
+        Assert.That(result.Success, Is.False);
+    }
+
+    [Test]
+    public async Task Pair_ValidCode_ReturnsTokenAndSiteInfo()
+    {
+        var codeResult = await _deviceSyncService.RequestPairingCode(_site.Id);
+
+        var result = await _deviceSyncService.Pair(codeResult.Model.Code);
 
         Assert.That(result.Success, Is.True);
         Assert.That(result.Model.Token, Is.Not.Null.And.Not.Empty);
@@ -129,9 +166,31 @@ public class DeviceSyncServiceUTests : DbTestFixture
     }
 
     [Test]
-    public async Task Pair_UnknownSite_ReturnsFailure()
+    public async Task Pair_UnknownCode_ReturnsFailure()
     {
-        var result = await _deviceSyncService.Pair(1);
+        var result = await _deviceSyncService.Pair("000000");
+
+        Assert.That(result.Success, Is.False);
+    }
+
+    [Test]
+    public async Task Pair_CodeIsSingleUse_SecondAttemptWithSameCodeFails()
+    {
+        var codeResult = await _deviceSyncService.RequestPairingCode(_site.Id);
+        var firstAttempt = await _deviceSyncService.Pair(codeResult.Model.Code);
+        var secondAttempt = await _deviceSyncService.Pair(codeResult.Model.Code);
+
+        Assert.That(firstAttempt.Success, Is.True);
+        Assert.That(secondAttempt.Success, Is.False);
+    }
+
+    [Test]
+    public async Task RequestPairingCode_Regenerating_InvalidatesPreviousCode()
+    {
+        var firstCode = (await _deviceSyncService.RequestPairingCode(_site.Id)).Model.Code;
+        await _deviceSyncService.RequestPairingCode(_site.Id);
+
+        var result = await _deviceSyncService.Pair(firstCode);
 
         Assert.That(result.Success, Is.False);
     }
@@ -147,7 +206,7 @@ public class DeviceSyncServiceUTests : DbTestFixture
     [Test]
     public async Task GetQuestionSetForToken_ReturnsAssignedQuestionSetWithQuestionsAndOptions()
     {
-        var token = (await _deviceSyncService.Pair(TestSiteMicrotingUid)).Model.Token;
+        var token = await PairViaNewCode();
 
         var result = await _deviceSyncService.GetQuestionSetForToken(token);
 
@@ -165,7 +224,7 @@ public class DeviceSyncServiceUTests : DbTestFixture
     [Test]
     public async Task SubmitAnswerCycle_WritesAnswerAndAnswerValues()
     {
-        var token = (await _deviceSyncService.Pair(TestSiteMicrotingUid)).Model.Token;
+        var token = await PairViaNewCode();
         var questionSet = (await _deviceSyncService.GetQuestionSetForToken(token)).Model;
         var question = questionSet.Questions.Single();
         var option = question.Options.Single();

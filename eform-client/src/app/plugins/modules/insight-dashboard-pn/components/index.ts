@@ -3,3 +3,4 @@ export * from './dashboards/';
 export * from './surveys';
 export * from './answers';
 export * from './question-sets';
+export * from './device-pairing';

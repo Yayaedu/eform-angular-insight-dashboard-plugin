@@ -1,20 +1,24 @@
 namespace InsightDashboard.Pn.Infrastructure.Models.Device;
 
+using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-// Simplificeret device-sync-kontrakt til lokal test af insight_app mod denne
-// backend. Erstatter IKKE den rigtige enhedsparring (OTP/Unit mod Microtings
-// cloud) — det er en kendt fremtidig opgave. Her parres direkte på SiteId,
-// og token er et in-memory-genereret device-token (se DeviceTokenStore).
+// Device-sync-kontrakt til insight_app. Parring sker nu via en tidsbegrænset
+// engangskode (se DevicePairingCodeStore), ikke længere direkte på SiteId —
+// koden genereres af en admin (DevicePairingController) og tastes ind i
+// appen, samme UX som eform-angular-frontends rigtige Unit-OTP-flow
+// (Device Users-siden, "New OTP"). Selve valideringen sker dog lokalt i
+// pluginet, da insight_app ikke kan gennemføre Microtings cloud-handshake.
+// Token efter parring er fortsat et in-memory device-token (DeviceTokenStore).
 //
 // Snake_case JsonProperty overalt, da insight_app's AnswerCycle.toJson()
 // (Dart) allerede sender/forventer det formatet (form_urlencoded.dart-
 // konventionen), uafhængigt af backendens globale camelCase-resolver.
 public class DevicePairRequestModel
 {
-    [JsonProperty("site_id")]
-    public int SiteId { get; set; }
+    [JsonProperty("code")]
+    public string Code { get; set; }
 }
 
 public class DevicePairResponseModel
@@ -27,6 +31,29 @@ public class DevicePairResponseModel
 
     [JsonProperty("site_name")]
     public string SiteName { get; set; }
+}
+
+// Admin-facing: anmoder om (eller regenererer) en parringskode for et site.
+// SiteId her er, ligesom resten af device-API'et, Sites.MicrotingUid.
+public class DevicePairingCodeRequestModel
+{
+    [JsonProperty("site_id")]
+    public int SiteId { get; set; }
+}
+
+public class DevicePairingCodeResponseModel
+{
+    [JsonProperty("code")]
+    public string Code { get; set; }
+
+    [JsonProperty("site_id")]
+    public int SiteId { get; set; }
+
+    [JsonProperty("site_name")]
+    public string SiteName { get; set; }
+
+    [JsonProperty("expires_at")]
+    public DateTime ExpiresAtUtc { get; set; }
 }
 
 public class DeviceAnswerItemModel

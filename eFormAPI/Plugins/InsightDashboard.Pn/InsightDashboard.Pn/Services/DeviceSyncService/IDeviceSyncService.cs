@@ -6,7 +6,8 @@ using Microting.eFormApi.BasePn.Infrastructure.Models.API;
 
 public interface IDeviceSyncService
 {
-    Task<OperationDataResult<DevicePairResponseModel>> Pair(int siteId);
+    Task<OperationDataResult<DevicePairingCodeResponseModel>> RequestPairingCode(int siteId);
+    Task<OperationDataResult<DevicePairResponseModel>> Pair(string code);
     Task<OperationDataResult<DeviceQuestionSetResponseModel>> GetQuestionSetForToken(string token);
     Task<OperationDataResult<DeviceAnswerSubmitResponseModel>> SubmitAnswerCycle(string token, DeviceAnswerCycleModel model);
 }

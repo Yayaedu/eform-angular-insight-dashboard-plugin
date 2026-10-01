@@ -1,0 +1,26 @@
+<eform-new-subheader>
+  <span>{{ 'Generate a pairing code for a site, then enter it in insight_app on the tablet.' | translate }}</span>
+</eform-new-subheader>
+
+<mat-card *ngIf="sites.length === 0" class="m-3 p-3">
+  <p>{{ 'No sites found.' | translate }}</p>
+</mat-card>
+
+<div class="d-flex flex-column m-3" *ngIf="sites.length > 0">
+  <mat-card *ngFor="let site of sites" class="mb-2 p-2">
+    <div class="d-flex flex-row justify-content-between align-items-center">
+      <div class="d-flex flex-column">
+        <strong>{{ site.name }}</strong>
+        <span>#{{ site.id }}</span>
+      </div>
+      <button
+        mat-raised-button
+        color="accent"
+        id="pairingCodeBtn-{{ site.id }}"
+        (click)="openPairingCodeDialog(site)"
+      >
+        {{ 'Pairing code' | translate }}
+      </button>
+    </div>
+  </mat-card>
+</div>
